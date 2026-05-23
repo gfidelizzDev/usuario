@@ -1,7 +1,6 @@
 package com.gfidelizzdev.usuario.infraestructure.repository;
 
 import com.gfidelizzdev.usuario.infraestructure.entityy.Usuario;
-import com.gfidelizzdev.usuario.infraestructure.entityy.Usuario;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,7 +12,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
 
     boolean existsByEmail(String email);
 
-    Optional<Object> findByEmail(String email);
+    Optional<Usuario> findByEmail(String email);
 
     @Transactional
     void deleteByEmail(String email);
