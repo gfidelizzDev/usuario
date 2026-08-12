@@ -28,13 +28,33 @@ public class UsuarioService {
     private final EnderecoRepository enderecoRepository;
     private final TelefoneRepository telefoneRepository;
 
+//    public UsuarioDTO salvaUsuario(UsuarioDTO usuarioDTO) {
+//        emailExiste(usuarioDTO.getEmail());
+//        usuarioDTO.setSenha(passwordEncoder.encode(usuarioDTO.getSenha()));
+//        Usuario usuario = usuarioConverter.paraUsuario(usuarioDTO);
+//        return usuarioConverter.paraUsuarioDTO(
+//                usuarioRepository.save(usuario)
+//        );
+
+//    teste
     public UsuarioDTO salvaUsuario(UsuarioDTO usuarioDTO) {
         emailExiste(usuarioDTO.getEmail());
         usuarioDTO.setSenha(passwordEncoder.encode(usuarioDTO.getSenha()));
+
         Usuario usuario = usuarioConverter.paraUsuario(usuarioDTO);
+
+        // vincula cada endereço e telefone ao usuário antes de salvar
+        if (usuario.getEnderecos() != null) {
+            usuario.getEnderecos().forEach(e -> e.setUsuario(usuario));
+        }
+        if (usuario.getTelefones() != null) {
+            usuario.getTelefones().forEach(t -> t.setUsuario(usuario));
+        }
+
         return usuarioConverter.paraUsuarioDTO(
                 usuarioRepository.save(usuario)
         );
+//        versão de testo do salva usuario sem erro arrays null
     }
 
     public void emailExiste(String email) {
