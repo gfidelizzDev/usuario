@@ -9,11 +9,18 @@ import com.gfidelizzdev.usuario.infraestructure.entityy.Telefone;
 import com.gfidelizzdev.usuario.infraestructure.entityy.Usuario;
 import com.gfidelizzdev.usuario.infraestructure.exceptions.ConflictException;
 import com.gfidelizzdev.usuario.infraestructure.exceptions.ResourceNotFoundException;
+import com.gfidelizzdev.usuario.infraestructure.exceptions.UnauthorizedException;
 import com.gfidelizzdev.usuario.infraestructure.repository.EnderecoRepository;
 import com.gfidelizzdev.usuario.infraestructure.repository.TelefoneRepository;
 import com.gfidelizzdev.usuario.infraestructure.repository.UsuarioRepository;
 import com.gfidelizzdev.usuario.infraestructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,16 +34,9 @@ public class UsuarioService {
     private final JwtUtil jwtUtil;
     private final EnderecoRepository enderecoRepository;
     private final TelefoneRepository telefoneRepository;
+    private final AuthenticationManager authenticationManager;
 
-//    public UsuarioDTO salvaUsuario(UsuarioDTO usuarioDTO) {
-//        emailExiste(usuarioDTO.getEmail());
-//        usuarioDTO.setSenha(passwordEncoder.encode(usuarioDTO.getSenha()));
-//        Usuario usuario = usuarioConverter.paraUsuario(usuarioDTO);
-//        return usuarioConverter.paraUsuarioDTO(
-//                usuarioRepository.save(usuario)
-//        );
 
-//    teste
     public UsuarioDTO salvaUsuario(UsuarioDTO usuarioDTO) {
         emailExiste(usuarioDTO.getEmail());
         usuarioDTO.setSenha(passwordEncoder.encode(usuarioDTO.getSenha()));
@@ -56,6 +56,20 @@ public class UsuarioService {
         );
 //        versão de testo do salva usuario sem erro arrays null
     }
+
+
+    public String autenticarUsuario(UsuarioDTO usuarioDTO) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(usuarioDTO.getEmail(), usuarioDTO.getSenha())
+            );
+            return "Bearer " + jwtUtil.generateToken(authentication.getName());
+
+        } catch (BadCredentialsException | UsernameNotFoundException | AuthorizationDeniedException e) {
+            throw new UnauthorizedException("Usuário ou senha inválidos ", e.getCause());
+        }
+    }
+
 
     public void emailExiste(String email) {
         try {
@@ -137,13 +151,14 @@ public class UsuarioService {
         Endereco enderecoEntity = enderecoRepository.save(endereco);
         return usuarioConverter.paraEnderecoDTO(enderecoEntity);
     }
-    public TelefoneDTO cadastraTelefone(String token, TelefoneDTO dto){
-    String email = jwtUtil.extrairEmailToken(token.substring(7));
-    Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() ->
-            new ResourceNotFoundException("email não encontrado " + email));
 
-    Telefone telefone = usuarioConverter.paraTelefoneEntity(dto, usuario.getId());
+    public TelefoneDTO cadastraTelefone(String token, TelefoneDTO dto) {
+        String email = jwtUtil.extrairEmailToken(token.substring(7));
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() ->
+                new ResourceNotFoundException("email não encontrado " + email));
+
+        Telefone telefone = usuarioConverter.paraTelefoneEntity(dto, usuario.getId());
         return usuarioConverter.paraTelefoneDTO(
                 telefoneRepository.save(telefone));
-}
+    }
 }
