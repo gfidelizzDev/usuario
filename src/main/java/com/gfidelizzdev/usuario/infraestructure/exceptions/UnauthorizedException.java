@@ -1,9 +1,9 @@
 package com.gfidelizzdev.usuario.infraestructure.exceptions;
 
-import javax.naming.AuthenticationException;
-
-public class UnauthorizedException extends AuthenticationException {
-    public UnauthorizedException(String message) {
+public class UnauthorizedException extends RuntimeException {
+    public UnauthorizedException(String message, Throwable throwable) {
         super(message);
     }
+
 }
+
