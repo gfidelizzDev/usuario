@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.sonarqube" version "7.3.0.8198"
 }
 
 group = 'com.gfidelizzdev'
@@ -57,4 +58,11 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+sonarqube {
+	properties {
+		property "sonar.projectKey", "usuario"
+		property "sonar.host.url", "http://localhost:9000"
+		property "sonar.login", "sqa_d3c35e0d4e8a22cada12aae32d6bfde1a27d64e7"
+	}
 }
